@@ -157,7 +157,6 @@ class MLPLayer:
         self.bias = np.zeros((self.perceptron_units))
 
     # n input of shape minibatchsize, input size, and outputs an ndarray of shape minibatchsize, num units after applying the weight matrix, the bias and the activation function.
-    
     def forward(self, input_matrix):
         # Input matrix of shape (batch_size , input_size)
         # Weights of shape (input_size, perceptron_units)
@@ -168,8 +167,6 @@ class MLPLayer:
         output_matrix = self.activation_function.call(output_matrix)
         
         return output_matrix
-
-        # Iterate over minibatch and save into minibatch vector 
         
 
 ####################
