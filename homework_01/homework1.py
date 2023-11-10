@@ -4,6 +4,9 @@ import random
 import numpy as np
 import math
 
+DEBUG = True
+def do_anything():
+    return None
 ######################
 # Data and Generator #
 ######################
@@ -113,7 +116,9 @@ class softmax:
         self.array = sum(to_be)
 
     # Returns the final quotient of softmax
-    def division_of_softmax(self):
+    # Expect input_matrix of shape [batch_size, 10]
+    # Return array of shape [10]
+    def call(self, input_matrix):
         to_be = []
         for i in range(len(self.input_array)):
             to_be.append(self.input_array[i] / self.array)
@@ -145,24 +150,35 @@ class MLPLayer:
         self.perceptron_units = perceptron_units
         self.input_size = input_size
 
-        # create an empty matrix of 0's of the size of the perception units and the previous inputs. These are all the possible weights.
-        # TODO: init the weights with a normal distribution
-        self.weights = np.random.normal(0, 0.2, (self.perceptron_units, self.input_size))
+        # Initialisation of weights as random numbers with shape (input_size, perceptron_units)
+        self.weights = np.random.normal(0, 0.2, (self.input_size, self.perceptron_units))
 
         # create a vector of biases. Each bias corresponds to one perceptron
         self.bias = np.zeros((self.perceptron_units))
 
     # n input of shape minibatchsize, input size, and outputs an ndarray of shape minibatchsize, num units after applying the weight matrix, the bias and the activation function.
+    
     def forward(self, input_matrix):
+        # Input matrix of shape (batch_size , input_size)
+        # Weights of shape (input_size, perceptron_units)
+        # Result_size of shape (batch_size, perceptron_units)
+        output_matrix = input_matrix * self.weights
+        output_matrix = output_matrix + self.bias
 
-        output_matrix = np.zeros([len(input_matrix, self.perceptron_units)])
+        output_matrix = self.activation_function.call(output_matrix)
+        
+        return output_matrix
 
-        # Iterate over minibatch and save into minibatch vector
-        for input_array in range(input_matrix.shape(0)):
-            bvuso
-
-        return None
+        # Iterate over minibatch and save into minibatch vector 
+        
 
 ####################
 # End of MLP Layer #
 ####################
+
+
+if DEBUG:
+    layer_1 = MLPLayer(sigmoid, 2, 2)
+    my_matrix = np.array([[2,2],[3,3]])
+    fw = layer_1.forward(my_matrix)
+    print(fw)
