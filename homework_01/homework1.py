@@ -156,9 +156,8 @@ class CCE_Loss:
     
     # Input of results and tests and calculating CCE Loss 
     # Expect input matrices of size ('minibatch-size', 10)
-    def call(self, target_result, data_result):
-        result = np.float32(0)
-        print("result 1", type(result))
+    def call(self, data_result, target_result):
+        result = np.zeros((target_result.shape[0]))
         # For loop with 'minibatch_size' iterations
         for batch_iter in range(target_result.shape[0]):
 
@@ -170,12 +169,14 @@ class CCE_Loss:
                 for data_iter in range(target_result.shape[1]):
 
                     # Sum of 'target' times logarithm of specific element of 'data_result'
-                    result = result + (target_result[batch_iter, target_iter] * np.log(data_result[batch_iter, data_iter]))
+                    result[batch_iter] = result[batch_iter] + target_result[batch_iter, target_iter] * np.log(data_result[batch_iter, data_iter])
 
-
-        print("result 2", type(result))
 
         return -(1 / target_result.shape[0]) * result
+
+
+
+    #def backwards(self, data_result, loss)
 
 ###################
 # End of CCE LOSS #
@@ -257,5 +258,3 @@ class Full_MLP:
 ######################
 # End of MLP Network #
 ######################
-
-
