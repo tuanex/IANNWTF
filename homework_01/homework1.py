@@ -1,12 +1,17 @@
+# TODO
+# + CCE_LOSS
+
+
+
 from sklearn.datasets import load_digits
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 import math
 
-DEBUG = True
-def do_anything():
-    return None
+
+
+
 ######################
 # Data and Generator #
 ######################
@@ -99,35 +104,65 @@ class sigmoid:
         for i in range(input_matrix.shape[0]):
             # For loop with 'input-size' iterations
             for j in range(input_matrix.shape[1]):
-                input_matrix[i,j] = (1 / (1 + np.exp(-input_matrix[i,j])))#
+                input_matrix[i,j] = (1 / (1 + np.exp(-input_matrix[i,j])))
+
         return input_matrix
 
 
 class softmax:
-    array = 0
-    input_array = []
-
-    # Calculate
-    def __init__(self, input_array):
-        self.input_array = input_array
-        to_be = []
-        for i in range(len(input_array)):
-            to_be.append(np.exp(input_array[i]))
-        self.array = sum(to_be)
+    # No input necessary
+    def __init__(self):
+        return None
 
     # Returns the final quotient of softmax
     # Expect input_matrix of shape [batch_size, 10]
     # Return array of shape [10]
     def call(self, input_matrix):
+        """
         to_be = []
         for i in range(len(self.input_array)):
             to_be.append(self.input_array[i] / self.array)
-        return to_be
+        """
+        # For loop with 'minibatch-size' iterations
+        for i in range(input_matrix.shape[0]):
+            # Sum exponents of array
+            array_value = sum(np.exp(input_matrix[i]))
+            # for loop with 'input-size' iterations
+            for j in range(input_matrix.shape[1]):
+                input_matrix[i,j] = np.exp(input_matrix[i,j]) / array_value
+        return input_matrix
 
 ############################
 # Activation functions END #
 ############################
 
+
+
+
+
+
+
+
+############
+# CCE LOSS #
+############
+
+class CCE_Loss:
+    def __init__(self):
+        return None
+    
+    # Input of results and tests and calculating CCE Loss 
+    # Rework to include batch_size?
+    def call(self, target_result, target_test):
+        result = 0
+        for i in range(len(target_result)):
+            for j in range(len(target_test)):
+                result = result + target_test * np.log(target_result)
+        return -(1 / len(target_test)) * result
+
+###################
+# End of CCE LOSS #
+###################
 
 
 
@@ -174,8 +209,37 @@ class MLPLayer:
 ####################
 
 
-if DEBUG:
-    layer_1 = MLPLayer(sigmoid, 2, 2)
-    my_matrix = np.array([[2,2],[3,3]])
-    fw = layer_1.forward(my_matrix)
-    print(fw)
+
+
+
+###############
+# MLP Network #
+###############
+
+class Full_MLP:
+    MLPs = []
+    # Initialize full MLP with number of layers and each layer's number of perceptrons
+    # Only hidden layers need to be specified, since input layers and output layers are given to 64 and 10
+    def __init__(self, num_layers, array_of_MLPs):
+        self.num_layers = num_layers
+        
+        # Layer 2, using sigmoid, given number of perceptrons and input of size 64
+        self.MLPs.append(MLPLayer(sigmoid, array_of_MLPs[0], 64))
+
+        # Layers 3 to second to last, using sigmoid, given number of perceptrons and input of number of perceptrons in previous layer
+        for i in range(num_layers):
+            self.MLPs.append(MLPLayer(sigmoid, array_of_MLPs[i], array_of_MLPs[i - 1]))
+
+        # Last layer, using softmax with 10 perceptrons and as input number of perceptrons of second to last layer
+        self.MLPs.append(MLPLayer(softmax, 10, array_of_MLPs[num_layers - 1]))
+
+
+######################
+# End of MLP Network #
+######################
+
+
+soft = softmax()
+arr = np.array[1,2,3,4,5,6,7]
+help_me = soft.call(arr)
+print(help_me)
