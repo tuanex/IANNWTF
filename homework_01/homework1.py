@@ -9,7 +9,8 @@ import random
 import numpy as np
 import math
 
-
+def do_anything():
+    return None
 
 
 ######################
@@ -98,13 +99,16 @@ class sigmoid:
     def __init__(self):
         return None
 
-    # Calculate sigmoid with input_matrix(minibatch_size, perceptron_units)
+    # Calculate sigmoid with input_matrix (minibatch_size, perceptron_units)
     def call(self, input_matrix):
+
         # For loop with 'minibatch-size' iterations
-        for i in range(input_matrix.shape[0]):
+        for batch_size in range(input_matrix.shape[0]):
+
             # For loop with 'input-size' iterations
-            for j in range(input_matrix.shape[1]):
-                input_matrix[i,j] = (1 / (1 + np.exp(-input_matrix[i,j])))
+            for input_size in range(input_matrix.shape[1]):
+                input_matrix[batch_size,input_size] = (1 / (1 + np.exp(-input_matrix[batch_size,input_size])))
+
 
         return input_matrix
 
@@ -124,22 +128,21 @@ class softmax:
             to_be.append(self.input_array[i] / self.array)
         """
         # For loop with 'minibatch-size' iterations
-        for i in range(input_matrix.shape[0]):
+        for batch_size in range(input_matrix.shape[0]):
+
             # Sum exponents of array
-            array_value = sum(np.exp(input_matrix[i]))
+            array_value = sum(np.exp(input_matrix[batch_size]))
+
             # for loop with 'input-size' iterations
-            for j in range(input_matrix.shape[1]):
-                input_matrix[i,j] = np.exp(input_matrix[i,j]) / array_value
+            for input_size in range(input_matrix.shape[1]):
+                input_matrix[batch_size,input_size] = np.exp(input_matrix[batch_size,input_size]) / array_value
+
+
         return input_matrix
 
 ############################
 # Activation functions END #
 ############################
-
-
-
-
-
 
 
 
@@ -152,13 +155,21 @@ class CCE_Loss:
         return None
     
     # Input of results and tests and calculating CCE Loss 
-    # Rework to include batch_size?
-    def call(self, target_result, target_test):
-        result = 0
-        for i in range(len(target_result)):
-            for j in range(len(target_test)):
-                result = result + target_test * np.log(target_result)
-        return -(1 / len(target_test)) * result
+    # Expect input matrices of size ('minibatch-size', 10)
+    def call(self, target_result, data_result):
+        result = 0.
+        print("result 1", type(result))
+        # For loop with 'minibatch_size' iterations
+        for batch_iter in range(target_result.shape[0]):
+
+            # For loop with 'input_size' iterations
+            for input_iter in range(target_result.shape[1]):
+
+                # Sum of 'target' times logarithm of specific element of 'data_result'
+                result = result + sum(target_result[batch_iter] * np.log(data_result[batch_iter, input_iter]))
+        print("result 2", type(result))
+
+        return -(1 / target_result.shape[0]) * result
 
 ###################
 # End of CCE LOSS #
@@ -212,6 +223,9 @@ class MLPLayer:
 
 
 
+
+
+
 ###############
 # MLP Network #
 ###############
@@ -239,7 +253,6 @@ class Full_MLP:
 ######################
 
 
-soft = softmax()
-arr = np.array[1,2,3,4,5,6,7]
-help_me = soft.call(arr)
-print(help_me)
+
+help_me = Full_MLP(2, [10, 10])
+print(help_me.MLPs[0].input_size)
