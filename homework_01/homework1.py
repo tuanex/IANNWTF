@@ -93,12 +93,12 @@ class sigmoidFunction:
 """
 
 
-class sigmoid:
+class Sigmoid:
     # No input necessary
     def __init__(self):
         return None
 
-    # Calculate sigmoid with input_matrix (minibatch_size, perceptron_units)
+    # Calculate sigmoid with input_matrix of shape (minibatch_size, perceptron_units)
     def call(self, input_matrix):
 
         # For loop with 'minibatch-size' iterations
@@ -113,7 +113,7 @@ class sigmoid:
 
 
 
-class softmax:
+class Softmax:
     # No input necessary
     def __init__(self):
         return None
@@ -158,8 +158,8 @@ class CCE_Loss:
     # Expect input matrices of size ('minibatch_size', 10)
     # Return vector of loss per sample of size ('minibatch_size', 1)
     def call(self, data_result, target_result):
-        #result = np.zeros((target_result.shape[0]))
-        result = 0.
+        result = np.zeros((target_result.shape[0]))
+
         # For loop with 'minibatch_size' iterations
         for batch_iter in range(target_result.shape[0]):
 
@@ -171,22 +171,27 @@ class CCE_Loss:
                 for data_iter in range(target_result.shape[1]):
 
                     # Sum of 'target' times logarithm of specific element of 'data_result'
-                    result = result + target_result[batch_iter, target_iter] * np.log(data_result[batch_iter, data_iter])
+                    result[batch_iter] = result[batch_iter] + target_result[batch_iter, target_iter] * np.log(data_result[batch_iter, data_iter])
 
 
-        # - (1 / (number of sets in the dataset) * sum over samples number (sum over result_size (sum over result_size))
-        # Question: nummber of set in the dataset or number of possible outcomes
-        return -(1 / target_result.shape[0]) * result
+        # - (1 / (result size) * (sum over result_size (sum over result_size))
+        return -(1 / target_result.shape[1]) * result
 
 
 
     # Input of data result and outcome of loss
-    # Both inputs of size ('minibatch_size', 1)
+    # Result of training as data_result of size ('minibatch_size', 1)
+    # loss of size ('minibatch_size', 1)
     # Return vector of loss per sample of size ('minibatch_size', 1)
     def backwards(self, data_result, loss):
         
-        for i in range(data_result.shape[0]):
-            do_anything
+        # Iterate over 'minibatch_size'
+        for batch in range(data_result.shape[0]):
+            
+            # Iterate over each perceptron
+            for perceptron in range():
+                
+
 
         return 
 
@@ -212,7 +217,7 @@ class MLPLayer:
     # Percepttron units is amount of perceptrons in current layer
     def __init__(self, activation_function, perceptron_units, input_size):
 
-        self.activation_function = activation_function()
+        self.activation_function = activation_function
         self.perceptron_units = perceptron_units
         self.input_size = input_size
 
@@ -222,12 +227,16 @@ class MLPLayer:
         # create a vector of biases. Each bias corresponds to one perceptron
         self.bias = np.zeros((self.perceptron_units))
 
-    # n input of shape minibatchsize, input size, and outputs an ndarray of shape minibatchsize, num units after applying the weight matrix, the bias and the activation function.
+    # n input of shape minibatchsize, input size, and outputs an ndarray of shape minibatchsize, 
+    # num units after applying the weight matrix, the bias and the activation function.
     def forward(self, input_matrix):
         # Input matrix of shape (batch_size , input_size)
         # Weights of shape (input_size, perceptron_units)
         # Result_size of shape (batch_size, perceptron_units)
-        output_matrix = input_matrix * self.weights
+        
+        # Dot product of input_matrix and weights
+        # Iterating over batches
+        output_matrix = np.dot(input_matrix, self.weights)
         output_matrix = output_matrix + self.bias
 
         output_matrix = self.activation_function.call(output_matrix)
@@ -294,3 +303,13 @@ print(loss_arr)
 """
 
 print(next(data1))
+
+arr = np.random.normal(0., 0.2, [2,3])
+
+sigmoid = Sigmoid()
+layer1 = MLPLayer(sigmoid, 2, 3)
+print(layer1.forward(arr))
+
+
+my_matrix = np.array([[1,2],[3,4]])
+print(np.dot(my_matrix, my_matrix))
