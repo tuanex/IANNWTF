@@ -9,8 +9,6 @@ import random
 import numpy as np
 import math
 
-def do_anything():
-    return None
 
 
 ######################
