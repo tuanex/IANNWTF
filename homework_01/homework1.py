@@ -399,58 +399,5 @@ data_in_batches, label_in_batches = zip(*zip_gen)
 data_in_batches = np.array(data_in_batches)
 label_in_batches = np.array(label_in_batches)
 
-print(data_in_batches)
 
 print(training(1, full_mlp, data_in_batches))
-
-
-
-
-
-
-
-"""# Sigmoid instance
-sigmoid = Sigmoid()
-
-# Softmax instane
-soft = Softmax()
-
-# CCE_Loss instance
-loss = CCE_Loss()
-
-# MLP instance
-mlp = MLPLayer(soft, 2, 5)
-
-my_norm = np.random.normal(0, 0.2, [2,5])
-my_matrix = np.array([[0.01,0.01,0.01,0.96,0.01],[0.01,0.01,0.96,0.01,0.01]])
-my_matrix2 = np.array([[0.,0.,0.,1.,0.], [0.,0.,1.,0.,0.]])
-
-# Loss call -> distributes to 1
-soft_arr = soft.call(my_norm)
-
-# Loss call -> Loss of softmax.vec
-loss_call = loss.call(my_matrix, my_matrix2)
-#print(loss_call)
-
-# Loss backwards -> Loss-func backwards to
-loss_back = loss.backwards(my_matrix, my_matrix2, loss_call)
-#print(loss_back)
-
-# Sigmoid call
-sig_arr = sigmoid.call(my_norm)
-print(sig_arr)
-print(sigmoid.backwards(my_norm, sig_arr, loss_back))
-
-
-
-
-
-full = Full_MLP(3, [32, 20, 10])
-#full.full_MLP_backward()
-
-dict = {
-    "hello": [1,2]
-}
-
-print(dict["hello"][0])
-print(dict["hello"][1])"""
