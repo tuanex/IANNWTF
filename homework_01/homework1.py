@@ -158,24 +158,20 @@ class CCE_Loss:
     # Expect input matrices of size ('minibatch_size', 10)
     # Return vector of loss per sample of size ('minibatch_size', 1)
     def call(self, data_result, target_result):
-        result = np.zeros((target_result.shape[0]))
+        result = np.zeros(data_result.shape[0])
 
         # For loop with 'minibatch_size' iterations
         for batch_iter in range(target_result.shape[0]):
 
             # For loop with 'input_size' iterations
             # Here count for target_result
-            for target_iter in range(target_result.shape[1]):
-                
-                # Here count for data_result
-                for data_iter in range(target_result.shape[1]):
-
-                    # Sum of 'target' times logarithm of specific element of 'data_result'
-                    result[batch_iter] = result[batch_iter] + target_result[batch_iter, target_iter] * np.log(data_result[batch_iter, data_iter])
+            for result_iter in range(target_result.shape[1]):
+                # Sum of 'target' times logarithm of specific element of 'data_result'
+                result[batch_iter] = target_result[batch_iter, result_iter] * np.log(data_result[batch_iter, result_iter])
 
 
-        # - (1 / (result size) * (sum over result_size (sum over result_size))
-        return -(1 / target_result.shape[1]) * result
+        # (sum over result_size (sum over result_size))
+        return -1 * result
 
 
 
@@ -190,7 +186,7 @@ class CCE_Loss:
             
             # Iterate over each perceptron
             for perceptron in range():
-                
+                do_anything
 
 
         return 
@@ -289,19 +285,19 @@ class Full_MLP:
 ###########
 # Testing #
 ###########
-"""
+
 my_norm = np.random.normal(0, 0.2, [2,5])
 my_matrix = np.array([[0.01,0.01,0.01,0.96,0.01],[0.01,0.01,0.96,0.01,0.01]])
 my_matrix2 = np.array([[0.,0.,0.,1.,0.], [0.,0.,1.,0.,0.]])
-soft = softmax()
+soft = Softmax()
 soft_arr = soft.call(my_norm)
-print(soft_arr)
+#print(soft_arr)
 
 loss = CCE_Loss()
-loss_arr = loss.call(my_matrix, my_matrix2)
+loss_arr = loss.call(my_matrix, my_norm)
 print(loss_arr)
-"""
 
+"""
 print(next(data1))
 
 arr = np.random.normal(0., 0.2, [2,3])
@@ -313,3 +309,5 @@ print(layer1.forward(arr))
 
 my_matrix = np.array([[1,2],[3,4]])
 print(np.dot(my_matrix, my_matrix))
+loss = CCE_Loss()
+loss """
