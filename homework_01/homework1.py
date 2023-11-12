@@ -34,9 +34,9 @@ def generator(data, size):
             label_array.append([data[value][1]])
         return_array.append((input_array, label_array))
     
-
     for ret in return_array:
       yield ret
+
 
 # Load dataset
 digits = load_digits()
@@ -62,11 +62,6 @@ for i in range(len(images_data)):
 #############################
 # End of Data and Generator #
 #############################
-
-
-# Shuffle and split data into batches
-# data has the shape: [(image, label), (image, label), (image, label), .... 1797times]
-data1 = generator(data, 2)
 
 
 
@@ -101,15 +96,31 @@ class Sigmoid:
     # Calculate sigmoid with input_matrix of shape (minibatch_size, perceptron_units)
     def call(self, input_matrix):
 
-        # For loop with 'minibatch-size' iterations
+        # Iterating over number of samples
         for batch_size in range(input_matrix.shape[0]):
 
-            # For loop with 'input-size' iterations
+            # Iterating over number of inputs
             for input_size in range(input_matrix.shape[1]):
                 input_matrix[batch_size,input_size] = (1 / (1 + np.exp(-input_matrix[batch_size,input_size])))
 
-
         return input_matrix
+
+    # Preactivation of size ('minibatch_size', num_units)
+    # Activation of size ('minibatch_size', num_units)
+    # Error signal (dL / d activation) of size ('num_units', 1)
+    def backwards(self, preactivation, activation, error_signal):
+        dL_dpreactivation = np.zeros((preactivation.shape[0],preactivation.shape[1]))
+
+        # Iterating over number of samples
+        for batch_iter in range(preactivation.shape[0]):
+
+            # Iterating over number of inputs
+            for input_iter in range(preactivation.shape[1]):
+                dL_dpreactivation[batch_iter, input_iter] = np.exp(-preactivation[batch_iter, input_iter]) / (1 + np.exp(-preactivation[batch_iter, input_iter]))
+
+
+        return dL_dpreactivation
+    
 
 
 
@@ -136,7 +147,6 @@ class Softmax:
             # for loop with 'input-size' iterations
             for input_size in range(input_matrix.shape[1]):
                 input_matrix[batch_size,input_size] = np.exp(input_matrix[batch_size,input_size]) / array_value
-
 
         return input_matrix
 
@@ -179,17 +189,18 @@ class CCE_Loss:
     # Result of training as data_result of size ('minibatch_size', 1)
     # loss of size ('minibatch_size', 1)
     # Return vector of loss per sample of size ('minibatch_size', 1)
-    def backwards(self, data_result, loss):
-        
+    def backwards(self, data_result, target_result, loss):
+        output_matrix = np.zeros((data_result.shape[0], data_result.shape[1]))
+
         # Iterate over 'minibatch_size'
         for batch in range(data_result.shape[0]):
             
             # Iterate over each perceptron
-            for perceptron in range():
-                do_anything
+            for perceptron in range(data_result.shape[1]):
+                output_matrix[batch, perceptron] = data_result[batch, perceptron] - target_result[batch, perceptron]
 
 
-        return 
+        return output_matrix
 
 
 ###################
@@ -223,6 +234,7 @@ class MLPLayer:
         # create a vector of biases. Each bias corresponds to one perceptron
         self.bias = np.zeros((self.perceptron_units))
 
+
     # n input of shape minibatchsize, input size, and outputs an ndarray of shape minibatchsize, 
     # num units after applying the weight matrix, the bias and the activation function.
     def forward(self, input_matrix):
@@ -231,13 +243,39 @@ class MLPLayer:
         # Result_size of shape (batch_size, perceptron_units)
         
         # Dot product of input_matrix and weights
-        # Iterating over batches
+        print("input", input_matrix)
         output_matrix = np.dot(input_matrix, self.weights)
         output_matrix = output_matrix + self.bias
 
         output_matrix = self.activation_function.call(output_matrix)
         
         return output_matrix
+        
+    
+    # Expect dL_dpreactivation of size ('minibatch_size', 'num_units')
+    # Expect preactivation presenting both weight and input 
+    # Weight of size ('input_size', 'perceptron_units')
+    # Input of size ('input_size', 'perceptron_size')
+    def weights_backward(self, dL_dpreactivation, weight, prev_lay):
+        dL_dW_dinput = np.array([0.,0.])
+
+        # Calculate dL/dW
+        # Matrix of shape ('minibatch_size', 'perceptron_units)
+        dL_dW_dinput[0] = dL_dpreactivation * self.weight
+
+        # Calculate dL/dInput
+        # Matrix of shape ('minibatch_size', 'input_size')
+        dL_dW_dinput[1] = dL_dpreactivation * self.prev_lay
+
+        # Return [dW | dinput]
+        return dL_dW_dinput
+
+    
+    def layer_backwards(self, preactivation, activation, error_signal):
+
+        activation_back = self.activation_function.backwards(preactivation, activation, error_signal)
+        weights = self.weights_backward(activation_back, self.weights, self.input_matrix)
+        return activation_back, weights
         
 
 ####################
@@ -256,22 +294,42 @@ class MLPLayer:
 ###############
 
 class Full_MLP:
+    # List of MLPs
     MLPs = []
+    # Dictionary with everything pertaining to preactivations and activations
+    # With a shape of ('layer', ['preactivation','activation'])
+    input_dict = {}
     # Initialize full MLP with number of layers and each layer's number of perceptrons
     # Only hidden layers need to be specified, since input layers and output layers are given to 64 and 10
     def __init__(self, num_layers, array_of_MLPs):
         self.num_layers = num_layers
         
         # Layer 2, using sigmoid, given number of perceptrons and input of size 64
-        self.MLPs.append(MLPLayer(sigmoid, array_of_MLPs[0], 64))
+        self.MLPs.append(MLPLayer(Sigmoid(), array_of_MLPs[0], 64))
+        self.input_dict.update({"Inputs Layer 0": 0})
 
         # Layers 3 to second to last, using sigmoid, given number of perceptrons and input of number of perceptrons in previous layer
         for i in range(num_layers):
-            self.MLPs.append(MLPLayer(sigmoid, array_of_MLPs[i], array_of_MLPs[i - 1]))
+            self.MLPs.append(MLPLayer(Sigmoid(), array_of_MLPs[i], array_of_MLPs[i - 1]))
+            self.input_dict.update({"Inputs Layer "+ str(i): 0})
 
         # Last layer, using softmax with 10 perceptrons and as input number of perceptrons of second to last layer
-        self.MLPs.append(MLPLayer(softmax, 10, array_of_MLPs[num_layers - 1]))
+        self.MLPs.append(MLPLayer(Softmax(), 10, array_of_MLPs[num_layers - 1]))        
+        self.input_dict.update({"Inputs Layer " + str(num_layers - 1): 0})
 
+    def full_MLP_forward(self):
+
+        for mlp in range(self.num_layers + 1):
+            self.MLPs[mlp].forward(self.input_dict["Inputs Layer " + str(mlp)])
+    
+    def full_MLP_backward(self):
+        
+        for mlp in range(self.num_layers - 1, -1, -1):
+
+            self.MLPs[mlp].layer_backwards(self.input_dict["Input Layer " + str(mlp)][0], self.input_dict["Input Layer " + str(mlp)][1], self.input_dict["Input Layer " + str(mlp + 1)])
+            # Idea: Receive values for backpropagation and store for fitting in training()
+            MLP.input_dict["Inputs Layer ", str(mlp)].append(self.MLPs[mlp].layer_backwards(self.input_dict["Input Layer " + str(mlp)][0], self.input_dict["Input Layer " + str(mlp)][1], self.input_dict["Input Layer " + str(mlp + 1)]))
+        
 
 ######################
 # End of MLP Network #
@@ -282,32 +340,117 @@ class Full_MLP:
 
 
 
+
+
+#####################
+# Training Function #
+#####################
+
+def training(epochs, MLP, batches):
+    for i in range(epochs):
+        for batch in batches:
+            # Put in start values
+            MLP.input_dict.update({"Inputs Layer 1": batch})
+
+            # Calculate values through to the end until output layer
+            MLP.full_MLP_forward()
+
+            # Calculate Loss
+            loss = CCE_Loss()
+            loss.call()
+
+            # Backpropagation through till beginning
+            MLP.full_MLP_backward()
+
+            # Fitting
+            """
+            for layer in MLP_layers:
+                layers.weights = layers.weights + MLP.input_dict
+            """
+
+
+    return MLP
+############################
+# End of Training Function #
+############################
+
+
+
+
+
+
+
+
+
+
+
 ###########
 # Testing #
 ###########
 
+size = 100
+zip_gen = generator(data, 2)
+
+print(zip_gen)
+full_mlp = Full_MLP(2, [10, 10])
+
+data_in_batches, label_in_batches = zip(*zip_gen)
+
+data_in_batches = np.array(data_in_batches)
+label_in_batches = np.array(label_in_batches)
+
+print(data_in_batches)
+
+print(training(1, full_mlp, data_in_batches))
+
+
+
+
+
+
+
+"""# Sigmoid instance
+sigmoid = Sigmoid()
+
+# Softmax instane
+soft = Softmax()
+
+# CCE_Loss instance
+loss = CCE_Loss()
+
+# MLP instance
+mlp = MLPLayer(soft, 2, 5)
+
 my_norm = np.random.normal(0, 0.2, [2,5])
 my_matrix = np.array([[0.01,0.01,0.01,0.96,0.01],[0.01,0.01,0.96,0.01,0.01]])
 my_matrix2 = np.array([[0.,0.,0.,1.,0.], [0.,0.,1.,0.,0.]])
-soft = Softmax()
+
+# Loss call -> distributes to 1
 soft_arr = soft.call(my_norm)
-#print(soft_arr)
 
-loss = CCE_Loss()
-loss_arr = loss.call(my_matrix, my_norm)
-print(loss_arr)
+# Loss call -> Loss of softmax.vec
+loss_call = loss.call(my_matrix, my_matrix2)
+#print(loss_call)
 
-"""
-print(next(data1))
+# Loss backwards -> Loss-func backwards to
+loss_back = loss.backwards(my_matrix, my_matrix2, loss_call)
+#print(loss_back)
 
-arr = np.random.normal(0., 0.2, [2,3])
+# Sigmoid call
+sig_arr = sigmoid.call(my_norm)
+print(sig_arr)
+print(sigmoid.backwards(my_norm, sig_arr, loss_back))
 
-sigmoid = Sigmoid()
-layer1 = MLPLayer(sigmoid, 2, 3)
-print(layer1.forward(arr))
 
 
-my_matrix = np.array([[1,2],[3,4]])
-print(np.dot(my_matrix, my_matrix))
-loss = CCE_Loss()
-loss """
+
+
+full = Full_MLP(3, [32, 20, 10])
+#full.full_MLP_backward()
+
+dict = {
+    "hello": [1,2]
+}
+
+print(dict["hello"][0])
+print(dict["hello"][1])"""
