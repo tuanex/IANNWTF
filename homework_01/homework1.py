@@ -29,11 +29,10 @@ def generator(data, size):
     for not_value in range(iterating_sub):
         input_array = []
         label_array = []
-        print("batch " + not_value)
         for value in range(size):
-            input_array.append([size, data[value + not_value * size][0]])
-            label_array.append([size,data[value][1]])
-        returnArray.append((input_array, label_array))
+            input_array.append([data[value + not_value * size][0]])
+            label_array.append([data[value][1]])
+        return_array.append((input_array, label_array))
     
 
     for ret in return_array:
@@ -67,7 +66,7 @@ for i in range(len(images_data)):
 
 # Shuffle and split data into batches
 # data has the shape: [(image, label), (image, label), (image, label), .... 1797times]
-data1 = generator(data, 10)
+data1 = generator(data, 2)
 
 
 
@@ -113,6 +112,7 @@ class sigmoid:
         return input_matrix
 
 
+
 class softmax:
     # No input necessary
     def __init__(self):
@@ -155,9 +155,11 @@ class CCE_Loss:
         return None
     
     # Input of results and tests and calculating CCE Loss 
-    # Expect input matrices of size ('minibatch-size', 10)
+    # Expect input matrices of size ('minibatch_size', 10)
+    # Return vector of loss per sample of size ('minibatch_size', 1)
     def call(self, data_result, target_result):
-        result = np.zeros((target_result.shape[0]))
+        #result = np.zeros((target_result.shape[0]))
+        result = 0.
         # For loop with 'minibatch_size' iterations
         for batch_iter in range(target_result.shape[0]):
 
@@ -169,14 +171,25 @@ class CCE_Loss:
                 for data_iter in range(target_result.shape[1]):
 
                     # Sum of 'target' times logarithm of specific element of 'data_result'
-                    result[batch_iter] = result[batch_iter] + target_result[batch_iter, target_iter] * np.log(data_result[batch_iter, data_iter])
+                    result = result + target_result[batch_iter, target_iter] * np.log(data_result[batch_iter, data_iter])
 
 
+        # - (1 / (number of sets in the dataset) * sum over samples number (sum over result_size (sum over result_size))
+        # Question: nummber of set in the dataset or number of possible outcomes
         return -(1 / target_result.shape[0]) * result
 
 
 
-    #def backwards(self, data_result, loss)
+    # Input of data result and outcome of loss
+    # Both inputs of size ('minibatch_size', 1)
+    # Return vector of loss per sample of size ('minibatch_size', 1)
+    def backwards(self, data_result, loss):
+        
+        for i in range(data_result.shape[0]):
+            do_anything
+
+        return 
+
 
 ###################
 # End of CCE LOSS #
@@ -258,3 +271,26 @@ class Full_MLP:
 ######################
 # End of MLP Network #
 ######################
+
+
+
+
+
+
+###########
+# Testing #
+###########
+"""
+my_norm = np.random.normal(0, 0.2, [2,5])
+my_matrix = np.array([[0.01,0.01,0.01,0.96,0.01],[0.01,0.01,0.96,0.01,0.01]])
+my_matrix2 = np.array([[0.,0.,0.,1.,0.], [0.,0.,1.,0.,0.]])
+soft = softmax()
+soft_arr = soft.call(my_norm)
+print(soft_arr)
+
+loss = CCE_Loss()
+loss_arr = loss.call(my_matrix, my_matrix2)
+print(loss_arr)
+"""
+
+print(next(data1))
